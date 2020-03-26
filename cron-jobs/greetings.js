@@ -8,11 +8,11 @@ const goodMorning = new CronJob("* * * * *", function () {
     console.log("INITIATE ANGER");
 
     // client.login(process.env.TOKEN).then(() => {
-    //     const guild = client.guilds.cache.get(process.env.TEST_SERVER_ID);
+    const guild = client.guilds.cache.get(process.env.TEST_SERVER_ID);
     client.channels.fetch(process.env.TEST_CHANNEL)
         .then(channeObj => {
             // console.log("CHANNEL", channeObj);
-            channeObj.send('FUCK AGAIN!!!')
+            channeObj.send('AYYAYAY from cron!!!')
                 .then(message => console.log(`Sent message: ${message.content}`))
                 .catch(console.error);
         })
@@ -20,7 +20,7 @@ const goodMorning = new CronJob("* * * * *", function () {
             console.log(err)
         })
 
-    client.destroy();
+    //     client.destroy();
     // });
 })
 
