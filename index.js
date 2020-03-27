@@ -4,8 +4,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const fs = require('fs');
 const CronJob = require("cron").CronJob;
-
-var lineObj;
+const { JsonDB } = require('node-json-db');
 
 function readJSONFile() {
     return fs.readFile("./greetings.json", 'utf8', (err, jsonString) => {
@@ -14,9 +13,8 @@ function readJSONFile() {
             return
         }
 
-        lineObj = randomizeGreeting(JSON.parse(jsonString));
-        // console.log("INSIDE CALLBACK", lineObj)
-        return lineObj;
+        let line = randomizeGreeting(JSON.parse(jsonString));
+        return line
     })
 }
 
@@ -50,8 +48,7 @@ client.on("message", message => {
     sendGreeting(process.env.TEST_CHANNEL);
 })
 
-const goodMorning = new CronJob("* * * * *", function () {
-    console.log("INITIATE ANGER");
+const goodMorning = new CronJob("0 11 1-30 * *", function () {
     sendGreeting(process.env.TEST_CHANNEL);
 })
 
@@ -68,18 +65,25 @@ const respondWithGIF = (channel) => {
 };
 
 const sendGreeting = (channel) => {
-    readJSONFile();
+    fs.readFile("./greetings.json", 'utf8', (err, jsonString) => {
+        if (err) {
+            console.log("File read failed:", err)
+            return
+        }
 
-    console.log("MORNING", lineObj);
-    // client.channels.fetch(channel)
-    //     .then(channeObj => {
-    //         channeObj.send('CRON FUCK!!!')
-    //             .then(message => console.log(`Sent message: ${message.content}`))
-    //             .catch(console.error);
-    //     })
-    //     .catch(err => {
-    //         console.log(err)
-    //     })
+        let line = randomizeGreeting(JSON.parse(jsonString));
+
+        client.channels.fetch(channel)
+            .then(channeObj => {
+                channeObj.send(line.value)
+                    .then(message => console.log(`Sent message: ${message.content}`))
+                    .catch(console.error);
+            })
+            .catch(err => {
+                console.log(err)
+            })
+
+    })
 }
 
 client.login(process.env.TOKEN)
