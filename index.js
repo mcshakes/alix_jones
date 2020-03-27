@@ -1,10 +1,11 @@
 require('dotenv').config()
 const { prefix } = require('./config.json');
+const { postGIFS } = require('./response_manager/giphy_functions');
 const Discord = require("discord.js");
+const axios = require('axios')
 const client = new Discord.Client();
 const fs = require('fs');
 const CronJob = require("cron").CronJob;
-const { JsonDB } = require('node-json-db');
 
 function readJSONFile() {
     return fs.readFile("./greetings.json", 'utf8', (err, jsonString) => {
@@ -18,9 +19,12 @@ function readJSONFile() {
     })
 }
 
+// =================  =================  =================
 function randomizeGreeting(JSONmessages) {
     return JSONmessages.all[Math.random() * 38 | 0];
 }
+// =================  =================  =================
+
 
 client.once("ready", () => {
 
@@ -32,10 +36,10 @@ client.once("ready", () => {
 
 });
 
-client.on("message", message => {
-    if (message.author.bot) return; // Ignore if bots talk
 
-    // if (!message.content.startsWith(prefix) || message.author.bot) return;
+client.on("message", message => {
+
+    if (message.author.bot) return; // Ignore if bots talk
 
     // const args = message.content.slice(prefix.length).split(/ +/);
     const args = message.content
@@ -43,19 +47,30 @@ client.on("message", message => {
 
     const guild = client.guilds.cache.get(process.env.TEST_SERVER_ID);
 
-    // respondWithGIF(process.env.TEST_CHANNEL);
 
-    sendGreeting(process.env.TEST_CHANNEL);
+
+    // 1) Check if users were mentioned
+    if (message.mentions.users.first() !== undefined) {
+
+        if (message.mentions.users.first().username == "alix_jones") {
+            respondWithGIF(process.env.TEST_CHANNEL);
+        }
+
+    }
+
 })
 
 const goodMorning = new CronJob("0 11 1-30 * *", function () {
     sendGreeting(process.env.TEST_CHANNEL);
 })
 
-const respondWithGIF = (channel) => {
+const respondWithGIF = async channel => {
+    giphyURL = await postGIFS()
+
     client.channels.fetch(channel)
         .then(channeObj => {
-            channeObj.send('CRON FUCK!!!')
+
+            channeObj.send(giphyURL)
                 .then(message => console.log(`Sent message: ${message.content}`))
                 .catch(console.error);
         })
